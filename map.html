@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>顯示地圖</title>
+    <!-- 引入 Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        /* 設置地圖的大小 */
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>地圖顯示</h1>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
+    <script>
+        var map = L.map('map').setView([25.0330, 121.5654], 12);  // 預設顯示台北市中心
+
+        // 使用 OpenStreetMap 作為地圖圖層
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // 使用 AJAX 從伺服器獲取資料
+        fetch('get_coordinates.php')  // 伺服器端處理的 PHP 文件
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(location => {
+                    // 創建一個標記並將其添加到地圖上
+                    var marker = L.marker([location.latitude, location.longitude]).addTo(map);
+                    
+                    // 可選: 點擊標記時顯示更多資訊
+                    var popupContent = `<h3>${location.name}</h3><p>${location.description}</p>`;
+                    marker.bindPopup(popupContent);
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    </script>
+</body>
+</html>

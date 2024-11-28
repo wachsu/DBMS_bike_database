@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>選擇日期</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <style>
+        /* 一些樣式調整 */
+        #datepicker {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>選擇日期</h1>
+
+    <!-- 使用 Datepicker 顯示選擇器 -->
+    <input type="text" id="datepicker" placeholder="請選擇日期">
+
+    <div id="selectedDate" style="margin-top: 20px;"></div>
+
+    <script>
+        // 初始化 Datepicker
+        $(document).ready(function() {
+            $('#datepicker').datepicker({
+                dateFormat: 'yy-mm-dd',  // 設置日期格式
+                onSelect: function(dateText) {
+                    // 當用戶選擇日期時執行的動作
+                    $('#selectedDate').html("您選擇的日期是: " + dateText);
+
+                    // 這裡可以將選擇的日期提交給伺服器（用 AJAX）
+                    $.ajax({
+                        url: 'submit_date.php',  // 伺服器端處理日期的 PHP 文件
+                        method: 'POST',
+                        data: { date: dateText },
+                        success: function(response) {
+                            alert('日期已提交');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
