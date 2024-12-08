@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dropdown Example</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .container {
+      margin: 20px 0;
+    }
+    /*#display {
+      margin-top: 20px;
+      font-size: 1.5em;
+      color: blue;
+    }*/
+    .disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .error-message {
+      color: red; /* 紅字提示 */
+      font-size: 0.9em; /* 縮小字體 */
+      margin-top: 3px; /* 與輸入框保持微距 */
+      margin-bottom: 0; /* 避免多餘空間 */
+      position: relative;
+      left: 0; /* 與輸入框對齊 */
+    }
+    .move-right {
+      margin-left: 6em; /* 右移六個中文字寬 */
+    }
+  </style>
+</head>
+<body>
+  <h1>根據天氣因素預測租車數量</h1>
+
+  <!-- 第一組輸入框和按鈕 -->
+  <div class="container">
+    <div style="display: flex; align-items: flex-start;">
+      <input type="text" id="input1" type="button" placeholder="輸入站點名稱" style="padding: 5px; font-size: 1em;">
+      <button id="button1" style="padding: 5px 10px; font-size: 1em; margin-left: 10px;">搜尋</button>
+    </div>
+    <div id="stationError" class="error-message"></div>
+  </div>  
+
+  <form id="myForm">
+    <!-- 溫度 -->
+    <div class="container">
+      <label>
+        <input type="checkbox" name="temp" id="checkboxTemp" disabled>溫度：
+      </label>
+      <select id="dropdownTemp" style="padding: 5px; font-size: 1em;" disabled>
+        <option value="" disabled selected>請選擇</option>
+        <option value="option1">-5</option>
+        <option value="option2">2</option>
+        <option value="option3">9</option>
+        <option value="option4">16</option>
+        <option value="option5">23</option>
+        <option value="option6">30</option>
+      </select>
+      ±3℃
+    </div>
+
+    <!-- 降水? -->
+    <div class="container">
+      <label>
+        <input type="checkbox" name="rain" id="checkboxRain" disabled>下雨：
+      </label>
+      <button id="toggleRain" type="button" style="padding: 5px 10px; font-size: 1em;" disabled>否</button>
+    </div>
+
+    <!-- 風速 -->
+    <div class="container">
+        <label>
+        <input type="checkbox" name="wind" id="checkboxWind" disabled>風速：
+        </label>
+        <select id="dropdownWind" style="padding: 5px; font-size: 1em;" disabled>
+        <option value="" disabled selected>請選擇</option>
+        <option value="option1">11</option>
+        <option value="option2">18</option>
+        <option value="option3">25</option>
+        <option value="option4">32</option>
+        <option value="option5">39</option>
+        <option value="option6">46</option>
+        </select>
+        ±3 miles per hour
+    </div>
+
+    <!-- uv -->
+    <div class="container">
+      <div style="display: flex; align-items: flex-start;">
+        <label>
+          <input type="checkbox" name="UV" id="checkboxUV" disabled>紫外線指數：
+        </label>
+        <input type="text" id="inputUV" placeholder="輸入整數1~10" style="padding: 5px; font-size: 1em;" disabled>
+      </div>
+      <div id="UVError" class="error-message"></div>
+    </div>
+
+    <!-- 送出按鈕 -->
+    <div class="container">
+      <button type="button" id="submitButton" style="padding: 5px 10px; font-size: 1em;">送出</button>
+    </div>
+  </form>
+
+  <!-- 顯示選項資料 -->
+  <div id="result" style="margin-top: 20px;"></div>
+
+  <script>
+    // 第一組元素
+    const input1 = document.getElementById('input1');
+    const button1 = document.getElementById('button1');
+    const stationError = document.getElementById('stationError');
+
+    // 溫度
+    const checkboxTemp = document.getElementById('checkboxTemp');
+    const dropdownTemp = document.getElementById('dropdownTemp');
+    
+    // 下雨
+    const checkboxRain = document.getElementById('checkboxRain');
+    const toggleRain = document.getElementById('toggleRain');
+
+    //風速
+    const checkboxWind = document.getElementById('checkboxWind');
+    const dropdownWind = document.getElementById('dropdownWind');
+
+    //UV
+    const inputUV = document.getElementById('inputUV');
+    const checkboxUV = document.getElementById('checkboxUV');
+    const UVError = document.getElementById('UVError');
+
+    // 當第一組按鈕被按下時
+    button1.addEventListener('click', () => {
+      const value1 = input1.value;
+      fetch('search.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          stationName: value1,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            checkboxTemp.disabled = false;
+            checkboxRain.disabled = false;
+            checkboxWind.disabled = false;
+            checkboxUV.disabled = false;
+            const result = '';
+            document.getElementById('result').innerHTML = result;
+          } else {
+            stationError.textContent = `查無此站點!`;
+          }
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          stationError.textContent = '伺服器錯誤，請稍後再試！';
+        });
+      /*if (value1 == "西門") {
+        // 啟用第二組和第三組以及下拉選單
+        checkboxTemp.disabled = false;
+        checkboxRain.disabled = false;
+        checkboxWind.disabled = false;
+        checkboxUV.disabled = false;
+        const result = '';
+        document.getElementById('result').innerHTML = result;
+      } else if(value1) {
+        stationError.textContent = '請輸入"西門"';
+      } else {
+        stationError.textContent = '請輸入內容再按按鈕！';
+      }*/
+    });
+
+     // 監聽checkbox的變化，啟用/禁用相應的輸入框和按鈕
+    checkboxTemp.addEventListener('change', function() {
+      const isChecked = this.checked;
+      dropdownTemp.disabled = !isChecked;
+      const result = '';
+      document.getElementById('result').innerHTML = result;
+    });
+
+    checkboxRain.addEventListener('change', function() {
+      const isChecked = this.checked;
+      toggleRain.disabled = !isChecked;
+      const result = '';
+      document.getElementById('result').innerHTML = result;
+    });
+
+    checkboxWind.addEventListener('change', function() {
+      const isChecked = this.checked;
+      dropdownWind.disabled = !isChecked;
+      const result = '';
+      document.getElementById('result').innerHTML = result;
+    });
+
+    checkboxUV.addEventListener('change', function() {
+      const isChecked = this.checked;
+      inputUV.disabled = !isChecked;
+      const result = '';
+      document.getElementById('result').innerHTML = result;
+    });
+
+     // 雙狀態按鈕行為
+     toggleRain.addEventListener('click', () => {
+      if (toggleRain.textContent == '否') {
+        // 切換到 ON 狀態
+        toggleRain.textContent = '是';
+        const result = '';
+        document.getElementById('result').innerHTML = result;
+      } else {
+        // 切換到 OFF 狀態
+        toggleRain.textContent = '否';
+        const result = '';
+        document.getElementById('result').innerHTML = result;
+      }
+    });
+
+    // 監聽表單的 submit 事件
+    document.getElementById('myForm').addEventListener('submit', function(event) {
+    event.preventDefault();  // 防止表單提交
+    });
+
+    // 送出表單並顯示結果
+    document.getElementById('submitButton').addEventListener('click', function() {
+      const tempChecked = checkboxTemp.checked;
+      const windChecked = checkboxWind.checked;
+      const UVChecked = checkboxUV.checked;
+      const rainChecked = checkboxRain.checked;
+      const temp = dropdownTemp.selectedIndex;
+      const wind = dropdownWind.selectedIndex;
+      const UVValue = inputUV.value.trim();
+      const UVnumber = parseInt(UVValue, 10);
+      const rain = toggleRain.textContent == '是'? 100: 0;
+      const stationName = input1.value
+      
+
+      // 檢查UV輸入是否為有效整數且在範圍內
+      if (isNaN(UVnumber) || UVnumber < 0 || UVnumber > 10) {
+        UVError.textContent = `請輸入1~10的整數!`;
+        const result = '';
+        document.getElementById('result').innerHTML = result;
+        return;
+      }
+      UVError.textContent = ``;
+
+      fetch('predict.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          temp: tempChecked? temp: 'null',
+          wind: windChecked? wind: 'null',
+          UV: UVChecked? UVValue: 'null',
+          rain: rainChecked? rain: 'null',
+          stationName: stationName,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            const result = `預測借車數：${data.result}輛車`;
+          } else {
+            const result = `錯誤!`;
+          }
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          const result = '伺服器錯誤，請稍後再試！';
+        });
+
+      /*const result = `
+        <h3>選項資料：</h3>
+        <p>溫度：${tempChecked}</p>
+        <p>溫度選擇：${tempValue}±3℃</p>
+        <p>下雨? ${toggleStatus}</p>
+        <p>風速選擇：${windValue}±3 miles per hour</p>
+        <p>uv index：${UVValue}</p>
+      `;*/
+      
+      document.getElementById('result').innerHTML = result;
+    });
+  </script>
+</body>
+</html>
