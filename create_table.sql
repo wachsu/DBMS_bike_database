@@ -15,15 +15,17 @@ CREATE TABLE daily_rent_detail (
     );
 
 CREATE TABLE station_list (
-    station_id INT PRIMARY KEY,
-    station_name VARCHAR(255)
-    );
+    station_id INT,
+    station_name VARCHAR(255),
+    PRIMARY KEY (station_id, station_name)
+);
 
 CREATE TABLE usage_frequency (
     date DATE,
     station_name VARCHAR(255),
     pickup_counts INT,
-    dropoff_counts INT
+    dropoff_counts INT,
+    PRIMARY KEY (date, station_name)
     );
 
 CREATE TABLE weather (
@@ -59,7 +61,8 @@ CREATE TABLE weather (
     conditions VARCHAR(255),
     description VARCHAR(255),
     icon VARCHAR(50),
-    stations VARCHAR(255)
+    stations VARCHAR(255),
+    PRIMARY KEY (name, datetime)
     );
 
 
