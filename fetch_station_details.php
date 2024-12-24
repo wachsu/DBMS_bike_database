@@ -18,7 +18,7 @@ if ($conn->connect_error) {
 }
 
 // 根據傳入站點名稱及日期查詢借車和還車數量
-$sql = "SELECT pickup_counts, dropoff_counts FROM usage_frequency_2024 WHERE station_name = ? AND DATE(date) = ?";
+$sql = "SELECT pickup_counts, dropoff_counts FROM usage_frequency WHERE station_name = ? AND DATE(date) = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ss", $station_name, $date); // 使用字串參數
 $stmt->execute();
