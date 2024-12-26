@@ -25,14 +25,6 @@ try {
             MIN(start_lng) AS lng
         FROM daily_rent_detail
         GROUP BY start_station_id, start_station_name
-        UNION
-        SELECT 
-            end_station_id AS station_id, 
-            end_station_name AS station_name, 
-            MIN(end_lat) AS lat,
-            MIN(end_lng) AS lng
-        FROM daily_rent_detail
-        GROUP BY end_station_id, end_station_name;
     ');
     // 返回所有車站的座標資料
     $stations = $stmt->fetchAll(PDO::FETCH_ASSOC);
