@@ -5,14 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>自行車租借管理系統</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #43a047;  /* 綠色背景 */
+            color: #fff;                /* 白色文字 */
+            padding: 10px 20px;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-buttons button {
+            background-color: #ffeb3b;  /* 按鈕背景色 */
+            color: #000;                /* 按鈕文字顏色 */
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .header-buttons button:hover {
+            background-color: #fbc02d;  /* 懸停時按鈕背景色 */
+        }
+    </style>
 </head>
 <body>
-    <h1>自行車租借管理系統</h1>
+
+    <!-- header 部分 -->
+    <header>
+        <div class="header-title">自行車租借管理系統</div>
+        <div class="header-buttons">
+            <button onclick="location.href='../HOME.html'">Home</button>
+        </div>
+    </header>
+
+    <!-- 下方選擇操作按鈕 -->
     <div>
         <h2>選擇操作</h2>
         <button onclick="location.href='crud.php?table=station_list'">station_list</button>
         <button onclick="location.href='crud.php?table=daily_rent_detail'">daily_rent_detail</button>
         <button onclick="location.href='crud.php?table=usage_frequency'">usage_frequency</button>
     </div>
+
 </body>
 </html>
