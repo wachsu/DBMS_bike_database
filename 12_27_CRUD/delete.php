@@ -1,9 +1,9 @@
 <?php
 // 資料庫設定
 $host = 'localhost';
-$dbname = 'bike_rental';
+$dbname = 'final';
 $username = 'root';
-$password = '';
+$password = 'MySQLpassword';
 
 // 連線資料庫
 try {

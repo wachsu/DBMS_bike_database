@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bike Rental & Weather Data</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #map { height: 400px; width: 100%; }
+        .container { display: flex; flex-direction: column; margin-top: 20px; }
+        .bottom { display: flex; margin-top: 20px; }
+        .left, .right { flex: 1; padding: 10px; }
+        .calendar { margin-top: 10px; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #43a047;
+            color: #fff;
+            padding: 10px 20px;
+        }
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .header-buttons button {
+            background-color: #ffeb3b;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .header-buttons button:hover {
+            background-color: #fbc02d;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-title">Station List</div>
+        <div class="header-buttons">
+            <button onclick="location.href='../HOME.html'">Home</button>
+            <button onclick="location.href='../DailyRentPredict/home.html'">Daily Rent Predict</button>
+        </div>
+    </header>
+
+    <!-- 上半部分：地圖 -->
+    <div id="map"></div>
+
+    <!-- 下半部分：日曆、詳細資訊  -->
+    <div class="container">
+        <div class="bottom">
+            <!-- 左側：日曆 -->
+            <div class="left">
+                <h3>Select Date</h3>
+                <input type="text" id="calendar" class="calendar">
+                <p id="selected-date"></p>
+            </div>
+            <!-- 右側：詳細資訊 -->
+            <div class="right">
+                <h3>Station Details</h3>
+                <div id="station-info">
+                    <p>Pickup Count: <span id="pickup-count">N/A</span></p>
+                    <p>Dropoff Count: <span id="dropoff-count">N/A</span></p>
+                    <h4>Weather Information</h4>
+                    <p>Temperature: <span id="temp">N/A</span>°C</p>
+                    <p>Conditions: <span id="conditions">N/A</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 地圖：Leaflet -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- 日期選擇器：Flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <script>
+        // 初始化座標於 Washington, DC
+        const map = L.map('map').setView([38.907, -77.037], 12);
+
+        // 透過 L.tileLayer 載入 OpenStreetMap 的地圖圖層並加到 map 上
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        // 發送請求取得站點資料，並在地圖上顯示標記
+        fetch('fetch_stations_with_coords.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data && Array.isArray(data)) {
+                data.forEach(station => {
+                    if (station.lat && station.lng && station.station_id) {
+                        const latLng = new L.LatLng(station.lat, station.lng);
+    
+                        // 建立站點標記
+                        const marker = L.marker(latLng).addTo(map);
+    
+                        // 綁定站點的ID跟名字到標記上
+                        marker.station_id = station.station_id;
+                        marker.station_name = station.station_name;
+    
+                        // 使用 Tooltip 顯示站點名稱
+                        marker.bindTooltip(station.station_name, {
+                            permanent: false, // 只在滑鼠懸停時顯示
+                            direction: 'top', // Tooltip 顯示在標記的上方
+                            className: 'station-tooltip' // 可以設定自定義 CSS 類來控制 Tooltip 樣式
+                        }).openTooltip();
+
+                        // 點擊標記
+                        marker.on('click', function () {
+                            const stationId = this.station_id;
+                            const stationName = this.station_name;
+
+                            // 顯示正在獲取站點詳細資料
+                            document.getElementById('station-info').innerHTML = `
+                                <h3>${stationName}</h3>
+                                <p>Station ID: ${stationId}</p>
+                                <p>Fetching data...</p>
+                            `;
+                            
+                            // 更新站點的詳細資料
+                            fetchStationDetails(stationName);
+                        });
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Unable to fetch station data:', error);
+        });
+
+        // 初始化 Flatpickr，顯示日期選擇器
+        flatpickr("#calendar", {
+            dateFormat: "Y-m-d",  // 日期格式
+            onChange: function(selectedDates, dateStr, instance) {
+                const selectedDate = dateStr;
+                document.getElementById('selected-date').innerText = `Selected Date: ${selectedDate}`;
+                // 當日期變更時，更新詳細資料
+                const stationId = document.getElementById('station-info').getElementsByTagName('p')[0].innerText.split(': ')[1];
+                const stationName = document.getElementById('station-info').getElementsByTagName('h3')[0].innerText;
+                if (stationId) {
+                    fetchStationDetails(stationName);
+                }
+            }
+        });
+
+        // 獲取選擇日期、站點的詳細資料，並更新
+        function fetchStationDetails(stationName) {
+            const selectedDate = document.getElementById('selected-date').innerText.split(': ')[1];
+            // 因為站點的名稱包含了&，會導致輸入的資料被截斷，所以要用 encodeURIComponent 編碼
+            const encodedStationName = encodeURIComponent(stationName);
+
+            // 發送請求獲取選擇日期、站點的使用資料及天氣資料
+            fetch(`fetch_station_details.php?station_name=${encodedStationName}&date=${selectedDate}`)
+                .then(response => response.json())
+                .then(data => {
+                    // 檢查是否獲得資料，並更新詳細資料顯示
+                    document.getElementById('station-info').innerHTML = `
+                        <h3>${stationName}</h3>
+                        <p>Pickup Count: <span id="pickup-count">${data.usage_data ? data.usage_data.pickup_counts : 'N/A'}</span></p>
+                        <p>Dropoff Count: <span id="dropoff-count">${data.usage_data ? data.usage_data.dropoff_counts : 'N/A'}</span></p>
+                        <h4>Weather Information</h4>
+                        <p>Temperature: <span id="temp">${data.weather ? data.weather.temp : 'N/A'}</span>°C</p>
+                        <p>Conditions: <span id="conditions">${data.weather ? data.weather.conditions : 'N/A'}</span></p>
+                    `;
+                })
+                .catch(error => console.error('Error fetching station details:', error));
+        }
+    </script>
+</body>
+</html>

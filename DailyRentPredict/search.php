@@ -16,9 +16,9 @@ $stationName = $data['stationName'];
 try {
     // 資料庫連線設定
     $host = 'localhost';
-    $dbname = 'bike'; // 替換為你的資料庫名稱
+    $dbname = 'final'; // 替換為你的資料庫名稱
     $username = 'root';        // 替換為你的資料庫使用者名稱
-    $password = 'Ennseijinn0321';            // 替換為你的資料庫密碼
+    $password = 'MySQLpassword';            // 替換為你的資料庫密碼
 
     // 建立 PDO 連線
     $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
