@@ -34,35 +34,6 @@
     .move-right {
       margin-left: 6em; /* 右移六個中文字寬 */
     }
-    header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #43a047;
-            color: #fff;
-            padding: 10px 20px;
-        }
-        .header-title {
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .header-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .header-buttons button {
-            background-color: #ffeb3b;
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-        .header-buttons button:hover {
-            background-color: #fbc02d;
-        }
   </style>
 </head>
 <body>
@@ -181,7 +152,10 @@
           stationName: value1,
         }),
       })
-        .then((response) => response.json())
+        .then((response) => {
+          console.log('Response:', response); // 查看回傳的內容
+          return response.json();
+        })
         .then((data) => {
           if (data.success) {
             checkboxTemp.disabled = false;
@@ -189,28 +163,16 @@
             checkboxWind.disabled = false;
             checkboxUV.disabled = false;
             const result = '';
-            document.getElementById('result').innerHTML = result;
+            document.getElementById('result').innerHTML = '';
+            stationError.textContent = '';
           } else {
-            stationError.textContent = `查無此站點!`;
+            stationError.textContent = data.error || '此站點不存在!';
           }
         })
         .catch((error) => {
           console.error('Error:', error);
-          stationError.textContent = '伺服器錯誤，請稍後再試！';
+          stationError.textContent = error.message || '伺服器錯誤，請稍後再試！';
         });
-      /*if (value1 == "西門") {
-        // 啟用第二組和第三組以及下拉選單
-        checkboxTemp.disabled = false;
-        checkboxRain.disabled = false;
-        checkboxWind.disabled = false;
-        checkboxUV.disabled = false;
-        const result = '';
-        document.getElementById('result').innerHTML = result;
-      } else if(value1) {
-        stationError.textContent = '請輸入"西門"';
-      } else {
-        stationError.textContent = '請輸入內容再按按鈕！';
-      }*/
     });
 
      // 監聽checkbox的變化，啟用/禁用相應的輸入框和按鈕
@@ -275,14 +237,35 @@
       const rain = toggleRain.textContent == '是'? 100: 0;
       const stationName = input1.value
       
-
       // 檢查UV輸入是否為有效整數且在範圍內
-      if (isNaN(UVnumber) || UVnumber < 0 || UVnumber > 10) {
+      if (UVChecked && (isNaN(UVnumber) || UVnumber < 0 || UVnumber > 10)) {
         UVError.textContent = `請輸入1~10的整數!`;
         const result = '';
         document.getElementById('result').innerHTML = result;
         return;
       }
+      
+      if (windChecked && wind == 0) {
+        UVError.textContent = `請選擇風速!`;
+        const result = '';
+        document.getElementById('result').innerHTML = result;
+        return;
+      }
+
+      if (tempChecked && temp == 0) {
+        UVError.textContent = `請選擇溫度!`;
+        const result = '';
+        document.getElementById('result').innerHTML = result;
+        return;
+      }
+
+      if (!tempChecked && !windChecked && !UVChecked && !rainChecked) {
+        UVError.textContent = `請至少選擇一項!`;
+        const result = '';
+        document.getElementById('result').innerHTML = result;
+        return;
+      }
+
       UVError.textContent = ``;
 
       fetch('predict.php', {
@@ -301,26 +284,16 @@
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            const result = `預測借車數：${data.result}輛車`;
+            document.getElementById('result').innerHTML = `預測借車數：${data.result}輛車`;
           } else {
-            const result = `錯誤!`;
+            document.getElementById('result').innerHTML = data.error || `錯誤!`;
           }
         })
         .catch((error) => {
           console.error('Error:', error);
-          const result = '伺服器錯誤，請稍後再試！';
+          document.getElementById('result').innerHTML = error.message || '伺服器錯誤，請稍後再試！';
         });
-
-      /*const result = `
-        <h3>選項資料：</h3>
-        <p>溫度：${tempChecked}</p>
-        <p>溫度選擇：${tempValue}±3℃</p>
-        <p>下雨? ${toggleStatus}</p>
-        <p>風速選擇：${windValue}±3 miles per hour</p>
-        <p>uv index：${UVValue}</p>
-      `;*/
       
-      document.getElementById('result').innerHTML = result;
     });
   </script>
 </body>
